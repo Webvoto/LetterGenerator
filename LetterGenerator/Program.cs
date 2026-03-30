@@ -6,9 +6,9 @@ using System.Globalization;
 
 namespace Webvoto.LetterGenerator;
 
-record Arguments(FileInfo LettersFile, FileInfo TemplateFile, FileInfo OutputFile);
+record Arguments(FileInfo MatrixFile, FileInfo TemplateFile, FileInfo OutputFile);
 
-record Letter(string Identifier, string Name, string Address, string CepNetCode, string Password) {
+record LetterFields(string Identifier, string Name, string Address, string CepNetCode, string Password) {
 
 	public Dictionary<string, string> GetFields() => new() {
 		[nameof(Identifier)] = Identifier,
@@ -19,7 +19,7 @@ record Letter(string Identifier, string Name, string Address, string CepNetCode,
 	};
 }
 
-record LetterFile(string Name, List<Letter> Letters);
+record LetterFile(string Name, List<LetterFields> Letters);
 
 class Program {
 
@@ -50,7 +50,7 @@ class Program {
 
 		// Read letter data
 
-		var letters = read(arguments.LettersFile, password);
+		var letters = read(arguments.MatrixFile, password);
 
 		// Divide letters into files
 
@@ -67,26 +67,26 @@ class Program {
 
 	static Arguments parse(string[] args) {
 
-		var lettersFilePath = args.ElementAtOrDefault(0);
+		var matrixFilePath = args.ElementAtOrDefault(0);
 		var templateFilePath = args.ElementAtOrDefault(1);
 		var outputFilePath = args.ElementAtOrDefault(2);
 
-		if (string.IsNullOrEmpty(lettersFilePath) || string.IsNullOrEmpty(templateFilePath) || string.IsNullOrEmpty(outputFilePath)) {
-			throw new Exception("Syntax: LetterGenerator <letters file path> <PDF template file path> <output file path>");
+		if (string.IsNullOrEmpty(matrixFilePath) || string.IsNullOrEmpty(templateFilePath) || string.IsNullOrEmpty(outputFilePath)) {
+			throw new Exception("Syntax: LetterGenerator <matrix file> <template file> <output file>");
 		}
 
-		var lettersFileInfo = new FileInfo(lettersFilePath);
+		var matrixFileInfo = new FileInfo(matrixFilePath);
 		var templateFileInfo = new FileInfo(templateFilePath);
 		var outputFileInfo = new FileInfo(outputFilePath);
 
-		ensureExists(lettersFileInfo);
+		ensureExists(matrixFileInfo);
 		ensureExists(templateFileInfo);
 		ensureExists(outputFileInfo.Directory);
 
-		return new Arguments(lettersFileInfo, templateFileInfo, outputFileInfo);
+		return new Arguments(matrixFileInfo, templateFileInfo, outputFileInfo);
 	}
 
-	static List<Letter> read(FileInfo zipFileInfo, string password) {
+	static List<LetterFields> read(FileInfo zipFileInfo, string password) {
 
 		using var zipFileStream = zipFileInfo.OpenRead();
 		using var zipFile = new ZipFile(zipFileStream) { Password = password };
@@ -97,10 +97,10 @@ class Program {
 		using var csvStreamReader = new StreamReader(csvStream);
 		using var csvReader = new CsvReader(csvStreamReader, CultureInfo.CurrentCulture);
 
-		return [.. csvReader.GetRecords<Letter>()];
+		return [.. csvReader.GetRecords<LetterFields>()];
 	}
 
-	static List<LetterFile> group(List<Letter> letters) {
+	static List<LetterFile> group(List<LetterFields> letters) {
 
 		List<LetterFile> files = [];
 
