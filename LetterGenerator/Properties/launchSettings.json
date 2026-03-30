@@ -1,0 +1,9 @@
+{
+  "profiles": {
+		"LetterGenerator": {
+			"commandName": "Project",
+			"commandLineArgs": "letter-data.zip template.pdf letters.zip",
+			"workingDirectory": "$(ProjectDir)\\TestFiles"
+		}
+  }
+}
