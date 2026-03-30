@@ -27,6 +27,7 @@ class Program {
 	private const int ThreadCount = 16;
 
 	static int Main(string[] args) {
+		Console.WriteLine("--\nThis tool is licensed under AGPLv3 and its source code can be found at https://github.com/Webvoto/LetterGenerator\n--");
 		try {
 			Task.Run(() => runAsync(args)).GetAwaiter().GetResult();
 			Console.WriteLine("Done.");
